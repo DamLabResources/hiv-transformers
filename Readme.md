@@ -1,287 +1,209 @@
-Meta:
+# HIV-Transformers
+
+A repository containing the training scripts and evaluation experiments for the paper: 
+_HIV-Bidirectional Encoder Representations from Transformers (BERT): a set of pretrained transformers for accelerating HIV deep learning tasks._
+Frontiers in Virology. 2022
+
+
+## Abstract 
+
+The human immunodeficiency virus type 1 (HIV-1) is a global health threat that is characterized by extensive genetic diversity both within and between patients, rapid mutation to evade immune controls and antiretroviral therapies, and latent cellular and tissue reservoirs that stymie cure efforts.
+Viral genomic sequencing has proven effective at surveilling these phenotypes. 
+However, rapid, accurate, and explainable prediction techniques lag our sequencing ability. 
+Modern natural language processing libraries, like the Hugging Face transformers library, have both advanced the technical field and brought much-needed standardization of prediction tasks. 
+In this project, the application of this toolset to an array of classification tasks useful to HIV-1 biology was explored: protease inhibitor resistance, coreceptor utilization, and body-site identification. 
+HIV- Bidirectional Encoder Representations from Transformers (BERT), a protein-based transformer model fine-tuned on HIV-1 genomic sequences was able to achieve accuracies of 88%, 92%, and 89% on the tasks respectively making it competitive with leading models capable of only one of these tasks. 
+This model was also evaluated using a data augmentation strategy when mutations of known function were introduced. 
+The HIV-BERT model produced results that agreed in directionality 10- to 1000-fold better than traditional machine learning models, indicating an improved ability to generalize biological knowledge to unseen sequences. 
+The HIV-BERT model, trained task-specific models, and the datasets used to construct them have been released to the Hugging Face repository to accelerate research in this field. 
+
+## Utilizing
+
+The new datasets and trained models resulting from this study have been uploaded to the Huggingface repository.
+
+### Datasets
+
+The datasets have been uploaded to the following repositories:
+ 
+ - https://huggingface.co/datasets/damlab/HIV_FLT
+ - https://huggingface.co/datasets/damlab/HIV_V3_coreceptor
+ - https://huggingface.co/datasets/damlab/HIV_V3_bodysite
+ - https://huggingface.co/datasets/damlab/HIV_PI
+ 
+Model cards have been created in order to orient the reader to the appropriate fields and considerations.
+
+These datasets can be loaded into a python environment like so:
+
+```python
+import datasets
+
+data = datasets.load_dataset('damlab/HIV_FLT')
 ```
-Tentative Title: HuggingFace viral transformers
-Authors: Will Dampier, Bobby Link
-Target Journal:  Journal Of Predictive Virology   Brian's Viral variation invitation thingy
-Target date: 2022-01-25
-Current Status: Outline
-```
-
-## Introduction
-
-#TODO-Will
- - AI and big is great for biology
- - Analogy of NLP -> GLP 
-   - dna2vec reference
-   - UMLFit reference
  
- 
- - Transformer models have shown promise in other areas
-   - Facebook ESMs
-   - Google's ProtTrans
-   - SMILES reference?
-   
- - Models are improved with increased training
-   - UMLFit stuff
-   - ProtTrans reference
-   
-The ProtTrans network has been trained as a "generalist" network making it ideal for many tasks.
-However, this means that it is not ideal at specific tasks.
-This manuscript presents an exploration of applying the HuggingFace transformer model to domain specific applications.
-
-We chose 3 diverse tasks from the HIV field across the viral life-cycle:
-
-**#TODO-Rachel?**
-
-**Figure 1: BioRender of viral processes below**
-
-1) **Drug resistance** Due to the high mutation rate of HIV it is prone to developing resistance to antiretroviral therapy. 
-Small changes in the amino acid sequence of the reverse transcriptase can lead to a loss of affinity to the small molecule while maintaining affinity for the viral processes [ref]. 
-The Stanford HIV database contains a collection of 11805 phenotype results from 1958 isolates.
-It also maintains a prediction server for annotating HIV sequences with known resistance mutations [ref] while tools like X have been developed to predict resitence [].
-
-2) **Co-receptor utilization** HIV enters human cells by first binding the the CD4 receptor and then recruiting one of two possible co-receptors: CCR5 or CXCR4. [Benj refers].
-This allows for the entry into two different cellular resovoirs with CCR5 primarily responsible for T-cell infection and X4 as macrophages [wig refs]. 
-X4 tropic viruses lead to greater levels of neurocog impairment and resistance to entry inhibitors making it a useful clinical marker [refs].
-Co-receptor prediction from the V3 loop has been attempted may times using PSSM based methods [webpssm], decision trees [geno2pheno], and CNNs [newthings?]. 
- 
-3) **Body-site identification** Along with co-receptor tropism, it is important to know the differences between genetic sequences isolated at different body sites. 
-This is important for understanding the compartmentalization of sequences which may lead to inferences about the functions of the proteins at different sites. 
-The HIV V3 loop is known to have some compartmentalization between the brain and periphery [refs?].
-This task is traditionally tackled using phylogenetic methods like [ref, ref, and Benj ref] and has not been framed as a prediction process.
-
-This manuscript presents a strategy for solving these techniques using the HuggingFace transformer library.
-It explores the effects of pre-training, class weighting, and dataset size on the task.
-It also releases the models and datasets to the HuggingFace dataset and model hub for the community at large.
-This manuscript also provides advice and expectations on adapting this to one's own tasks.
-
-## Methods
-
-## Explanation of Public Datasets
-
-### HIV Full Genome Dataset
-
-The LANL database maintains a standard of all high-quality full-length genomes in the database.
-The most recent version was downloaded (2016-Full-genome) [ref].
-This was then processed using the LANL GeneCutter tool to extract and splice the DNA sequence of each gene [ref].
-These extracted DNA sequences were then translated into the appropriate protein sequence to the first stop-codon.
-
-The database was processed using the script [ref] and deposited as a HuggingFace Dataset [here]. #final-pass
-
-### Protease Drug Resistance
-
-The high-quality interactions from [ref] were downloaded on 12/21/2021 and contained X lines at the time of download.
-The file stores the amino-acid differences from the HXB2 reference sequence and an array of drug-susceptibility scores for each isolate.
-This was converted into a HuggingFace dataset by infering the full protease sequence and labeling any drug with a >4-fold increase in resistance as "True".
-
-The database was processed using the script [ref] and deposited as a HuggingFace Dataset [here]. #final-pass
-
-### Coreceptor Tropism
-
-V3-loop sequences were downloaded from the LANL database through the Search Interface [Link] on 12/20/21. 
-The query was generated by limiting the Subtypes to A, B, C, and D; selecting "list in field output" for the _Coreceptor_ and _Sample Tissue_ fields; and selecting V3 in the _Genomic Region Selection_ box.
-This generated approximately 220,000 results at the time of search.. 
-The LANL search tools were used to align, trim, and return the selected sequences with the associated background info.
-The background information was parsed to create an independent binary variable each for CCR5 & CXCR4 binding status.
-
-### Bodysite Identification
-
-Using the same V3 dataset downloaded above the _Sample Tissue_ field was aggregated so similar body-sites were grouped together. The grouping was performed as follows:
-
- - periphery-tcell : plasma, PBMC, T cells, CD4+ T cells, resting CD4+ T cells, effector memory CD4+ T cells, transitional memory T cells, central memory T cells, serum, blood, lymph node, CD4+ T cell supernatant, lymph node CD4+ T cells, CD14+ monocytes, activated CD4+ T cells, naive CD4+ T cells, effector memory T cells, T-cell, CD8+ T cells, PMBC, PBMC supernatant, stem memory T cells, terminally differentiated T cells
- - periphery-monocyte : lamina propria mononuclear cells, CD14+ monocytes, monocyte, CD16+ monocytes
- - CNS : brain, CSF, spinal cord, dendrites
- - lung : lung, BAL, sputum, diaphragm
- - breast-milk : breast milk,
- - gastric : colon, rectum, jejunum, ileum, GALT, rectal fluid, intestine, feces, stomach, choroid plexus, sigmoideum, gastric aspirate, esophagus
- - male-genitals : semen, seminal plasma, foreskin, seminal cells, urethra, prostate, testis, prostatic secretion
- - female-genitals : vaginal fluid, cervix, vagina, vaginal cells, cervicovaginal secretions
- - umbilical-cord : umbilical cord plasma, placenta
- - organ : liver, kidney, epidermis, thymus, pancreas, adrenal gland, spleen, bone marrow
- - dropped : supernatant, saliva, urine, meninges, skin tumor, qVOA, urine cells, breast milk supernatant, aorta, glioma
-
-Then, sequences were grouped such that each unique sequence was annotated with any body-site from the database.
-This allows a sequence to be found in multiple body-sites.
-Due to the significant over-representation of `periphery-tcell` tags, a random 95% were discarded.
-
-The V3 sequence data was processed using the script [REF] and deposited as a HuggingFace datasets [here] and [here]. #TODO
-
-
-
-
 ### Models
+ 
+The trained models were uploaded to:
+ - https://huggingface.co/damlab/HIV_BERT
+ - https://huggingface.co/damlab/HIV_V3_bodysite
+ - https://huggingface.co/damlab/HIV_PR_resist
+ - https://huggingface.co/damlab/HIV_V3_Coreceptor
+ 
+Model cards have been created in order to orient the reader to the appropriate input usage, training procedures, and evaluation results. 
 
-X models were constructed to evaluate the real-world performance on these prediction tasks.
-The datasets above were split using 5-fold cross-validation with the folds preserved across the different model trainings.
+These models can be loaded into a python environment like so:
 
-#### Naive Models
+```python
+from transformers import pipeline
 
-First, a Dummy model was created using the `sklearn.dummy.DummyClassifier` class with `stratified` strategy.
-This model represents guessing knowing the underlying class distribution of the training data and the lowest reasonable bar to set.
+predictor = pipeline("text-classification", model="damlab/HIV_V3_bodysite")
+predictor(f"C T R P N N N T R K S I R I Q R G P G R A F V T I G K I G N M R Q A H C")
 
-Next, a basic Random Forest Classifier was used as a biology naive model machine learning model.
-Sequences, V3 or PR, were transformed with the `sklearn.feature_extraction.text.TfidfVectorizer` class using a `ngram_range = (1,3)` and `analyzer='char'`. 
-This creates a vector of each k-mer sized 1-3 with the count normalized by the inverse of its prevelance in the rest of the training dataset.
-This naturually highlights kmers that are over-represented in the sequence.
-After a basic variance threshold to remove invariant columns, a classifier was built with the `sklearn.ensemble.RandomForestClassifier` class using the default parameters.
-This model represents a purely mathematical approach to the prediction problem.
-
-These models were trained using the `workflow/scripts/sklearn_train.py` script [REF].
-
-#### Transformer Models
-
-Biologically informed Transformer models were imported using the HuggingFace `AutoModelForSequenceClassification` tool.
-The HuggingFace library provides a `Trainer` module for refining pretrained models on new datasets [link].
-However, the default `Trainer` cannot accomodate multi-label prediction problems like those posed here.
-As such, a `CustomTrainer` was developed per recommendations [link].
-In brief, the loss function was replaced with a `BinaryCrossEntropy` function for each class-label with weighting to balance imbalanced classes [pytorch-link].
-The final loss is then returned as the weighted loss across each label. Each label was equally weighted in the final loss metric.
-This class is implemented in the module [link].
-
-For these experiments the Prot-Bert model from the RostLab was used as the basis for pretraining [REF].
-It has been trained across a wide array of proteins and is easily available in the HuggingFace library.
+[
+  [
+    {
+      "label": "periphery-tcell",
+      "score": 0.29097115993499756
+    },
+    {
+      "label": "periphery-monocyte",
+      "score": 0.014322502538561821
+    },
+    {
+      "label": "CNS",
+      "score": 0.06870711594820023
+    },
+    {
+      "label": "breast-milk",
+      "score": 0.002785981632769108
+    },
+    {
+      "label": "female-genitals",
+      "score": 0.024997007101774216
+    },
+    {
+      "label": "male-genitals",
+      "score": 0.01040483545511961
+    },
+    {
+      "label": "gastric",
+      "score": 0.06872137635946274
+    },
+    {
+      "label": "lung",
+      "score": 0.04432062804698944
+    },
+    {
+      "label": "organ",
+      "score": 0.47476938366889954
+    }
+  ]
+]
 ```
-from transformers import AutoModelForSequenceClassification
-model = AutoModelForSequenceClassification.from_pretrained('Rostlab/prot_bert_bfd')
+
+
+
+
+## Running
+
+This toolset is capable of recreating all experiments described in the manuscript from a single `snakemake` call.
+
+```bash
+conda create -c conda-forge -c bioconda --name hiv-transformers snakemake-minimal
+conda activate hiv-transformers
+
+git clone git@github.com:DamLabResources/hiv-transformers.git
+cd hiv-transformers
+
+snakemake --use-conda --cores all
 ```
-This pre-trained model was used as the initial weights for training each of the three tasked described above.
-This is implemented in the script [huggingface_train.py].
 
-Previous research has shown that refining language models on domain specific sequence can improve downstream performance [UMLFit ref].
-Using the whole genome sequence data described above the Prot-BERT model was refined using MaskLM training.
-In this task, a random set of amino acids as *masked* from the model, which is then asked to predict them.
-[https://github.com/huggingface/transformers/blob/master/examples/pytorch/language-modeling/run_mlm.py]
-
-#TODO-Will Finish MaskedLM training writing.
-
-### Conceptual Error
-
-#TODO-Will Write this better.
-
-Conceptual error was calculated using a set of reference mutations known from structural information to induce a known effect as well as random synonomous amino acid changes outside of the structural box.
-For resistance, sites that are known to cause resistance mutations were introduced into otherwise lacking examples. 
-For V3 coreceptor, sites known to interact with the CXCR4 co-receptor were introduced using the 11/24/25 rule; positive AAs at 11, 24, or 25 are known to be associated with structural binding [REF].
-If the example had the mutation, it was reverted back to wildtype.
-
-A model with low conceptual error will increase probability when a gain of function is introduced and decrease when it is removed. 
-However, it is difficult to assess the magnitude impact of a single mutation in a diverse background population; but one can infer the direction.
-The MSE was calculated between the original and mutatated sequences such that effects moving in the expected direction were set to 0 while opposite directions were kept.
-Conversely, when a synomomous mutation is made outside of the structural pocket, one would expect minimal change.
-Therefore, the conceptual error was calculated as any change in the output of the field.
+This will download the relevant libraries and run the relevant experiments.
 
 ## Results
 
-### Dataset Release
+The final figures are included in the `figures/` directory.
 
-This manuscript publically releases four HIV focused datasets.
-These have been prepared for other researchers by conforming to the HuggingFace Dataset Hub style.
-This allows the datasets to be downloaded using a simple command like:
+### Figure 1
+A diagram for the biological processes explored.
+The left column depicts the basic viral lifecycle starting with entry through the binding of CD4 and cell-specific coreceptors, followed by unpackaging of the capsid, reverse transcription of viral RNA, integration into the host genome, subsequent translation of viral proteins and repackaging. 
+Steps where of antiretroviral medications interfere with the lifecycle are also noted. 
+The middle panel indicates bodysites that are known to be anatomic reservoirs of latent viral replication. 
+The right panel shows a flow diagram of the experiments and training procedures described in the text. 
+Figure created with BioRender.com 
 
-```python
-from datasets import load_dataset
+![Figure 1](figures/Fig1.png).
 
-hiv_dataset = load_dataset('damlab/FLT_genome')
-```
 
-which are then available as high-speed data objects for downstream use.
 
-As shown in Figure 2A, the whole genome dataset contains a mixture of genes of the correct length as well as those with premature stop codons with 33.3% of genomes contained at least one gene with a premature stop-codon.
-When concatenated, this dataset contains 3.9 million characters, approximately 1% of the size of the original BFD training dataset of 393 million characters [Prot-trans ref].
-The classification datasets are independent from the genome dataset as these full-genomes lack drug-resistance, coreceptor binding type, or sample isolation information.
-As such, three datasets have been prepared for three classification tasks relevant to HIV biology.
-Figure 2B show the prevalence of drug resistance in Protease sequences across four drugs from the Stanford HIV Database.
-Out of the 1733 Protease sequences with known drug resistance, 55.8% of sequences have resistance to at least one drug while 28.0% have resistance to all four.
-Figure 2C describes the profile of body-sites where 5510 unique V3 sequences have been isolated with 28.3% isolated from multiple locations
-A partially overlapping set of 2935 V3 sequences contained coreceptor information with the majority being CCR5 binding 92.1%, 23.9% CXCR4 binding, and 16.0% dual tropic as shown in Figure 2D.
-Over 220,000 V3 sequences were discarded as having neither body-site or coreceptor information.
-
-![Dataset Info](figures/Fig2-dataset_description-high.png)
-
-**Figure 2** *Description of publically released datasets.*
-**A**. The length of each translated sequence is shown as a heatmap with darker regions indicating a greater concentration of sequences at a particular length. 
+### Figure 2
+Description of publicly released datasets. 
+**(A)** The length of each translated sequence is shown as a heatmap with darker regions indicating a greater concentration of sequences at that length.
 The proteome represents the total length of all translated sequences.
-**B**. The number of protease sequences with observed resistance (orange) and no resistance (blue) to each of four drugs.
-MultiDrug resistance represents the sum of individual drug resistances.
-**C**. The number of V3 sequences with observed observed each each body-site (orange) and not observed (blue) to each of the grouped sites.
-MultiSite represents the total number of sites that a sequence was observed in.
-**D**. The number of V3 sequences annotated with known coreceptor usage.
-DualTropic represents sequences that were determined to utilize both coreceptors.
-#TODO: Add key in post: Blue 0/False, Orange 1/True, Green 2, Red 3, Purple, 4
+**(B)** The number of protease sequences with observed resistance (orange) and no resistance (green) to each of four drugs.
+MultiDrug resistance represents the sum of individual drug resistances and is indicated by the key above.
+**(C)** The number of V3 sequences observed at each body-site (orange) and not observed (green) to each of the grouped sites. MultiSite represents the total number of sites that a unique V3 sequence was observed in.
+**(D)** The number of V3 sequences annotated with known coreceptor usage with those able to bind the coreceptor in orange and those not able to bind the coreceptor in green. DualTropic represents sequences that were determined to utilize both coreceptors in orange and those only able to bind to one are shown in green.  
+![Figure 2](figures/Fig2-dataset_description-high.png). 
 
 
-### HIV-BERT Pretraining
+### Figure 3
+Pretraining improves prediction metrics across all tasks. 
+The accuracy **(A)**, F1-score **(B)**, precision **(C)**, and AUC **(D)** are shown for each model and each prediction task. 
+The bar indicates the mean value and the error bars represent the 95% confidence interval of 5-fold cross validation. 
+The Null model is shown in red, the TF-IDF model is show in blue, the Prot-BERT model in green, and the HIV-BERT model is in purple. 
+The test-comparison bars represent the results of a paired t-test between each group; undrawn comparisons p<0.05, \*(0.05<p<=0.01), \*\*(0.01<p<=0.001), \*\*\*(0.001<p<=0.0001), \*\*\*\*(p<=0.00001). A Bonferroni correction based on all possible tests in the figure. 
 
-Utilizing the full genome dataset described above the `RostLab/prot_bert_bfd` model was refined for HIV specific tasks.
-This pretraining reduced the masked token cross-entropy loss from 1.85 nats for the unrefined model to 0.36 nats.
-This indicates that the average prediction for the correct amino acid improved from approximately 15% to 70%.
-This was visualized by subjecting the ConB V3 loop `CTRPNNNTRKSIHIGPGRAFYTTGEIIGDIRQAHC` [struct-ref] to single amino acid masking across all 35 positions.
-Figure 3A shows the difference between the unrefined model and the HIV refined model across this masking task. 
-The HIV refined model has a greater predicted probability for the consensus amino acid at the majority of positions (31/35) compared to the unrefined model. 
+![Figure 3](figures/Fig3-model_group-high.png) 
 
-Utilizing the V3 coreceptor dataset, an independent dataset from the full-genome model used to refine HIV-BERT, the likelihood of each amino acid at each position was calculated.
-Again, using the single-amino acid masking of the ConB V3 loop, the predicted likelihood of each amino acid was captured for each model.
-Figure 3B shows the comparison of the predicted likelihood vs the observed likelihood.
-On this independent dataset and task, the HIV-BERT obtains an r^2 of 0.56 compared to the untrained model which only achieved 0.45.
+### Figure 4
+Area under the curve (AUC) scores for individual fields of drug resistance and coreceptor prediction are consistent, but tissue identification is not. 
+The model AUC scores were disambiguated for each field of each prediction task. Each task is shown in **(A)** protease drug resistance, **(B)** coreceptor prediction, and **(C)** tissue isolation with colors indicating the prediction field. 
+The bar indicates the mean value and the error bars represent the 95% confidence interval of 5-fold cross validation. 
+The test-comparison bars represent the results of a paired t-test between each group; undrawn comparisons p<0.05, \*(0.05<p<=0.01), \*\*(0.01<p<=0.001), \*\*\*(0.001<p<=0.0001), \*\*\*\*(p<=0.00001). A Bonferroni correction based on all possible tests in the figure. 
 
-**Figure 3** Masked LM difference in V3 prevalence. 
-![Model Results](figures/Fig3-masked_results-high.png)
+![Figure 4](figures/Fig4-model_results-high.png) 
 
+### Figure 5
 
-### Classification Performance
+Full genome pretraining of the Prot-BERT model increases HIV-1 sequence awareness. 
+The probability of each consensus amino acid of the V3 loop when performing masked prediction task. 
+Green bars represent the prediction from the Prot-BERT model and red bars represent the HIV-BERT model.  
 
+![Figure 5](figures/Fig5-masked_results-high.png) 
 
-|                            | precision    | recall       | acc          | auc          |
-|:---------------------------|:-------------|:-------------|:-------------|:-------------|
-| ('resist', 'dummy')        | 43.4% (7.6)  | 43.6% (7.9)  | 51.7% (2.7)  | 49.9% (2.3)  |
-| ('resist', 'tfid')         | 87.2% (5.0)  | 92.4% (4.9)  | 91.3% (2.8)  | 97.0% (1.4)  |
-| ('resist', 'protbert')     | 80.6% (10.6) | 82.2% (22.9) | 82.8% (10.4) | 87.8% (13.1) |
-| ('resist', 'hivbert')      | 85.5% (9.0)  | 88.5% (4.3)  | 88.4% (3.2)  | 94.3% (2.4)  |
-| ('coreceptor', 'dummy')    | 57.7% (36.3) | 58.0% (35.8) | 74.0% (11.9) | 49.7% (2.1)  |
-| ('coreceptor', 'tfid')     | 92.7% (4.4)  | 82.0% (18.2) | 92.4% (2.9)  | 92.5% (2.6)  |
-| ('coreceptor', 'protbert') | 91.0% (6.6)  | 81.5% (15.6) | 91.2% (2.3)  | 91.6% (3.0)  |
-| ('coreceptor', 'hivbert')  | 91.7% (6.0)  | 84.5% (13.5) | 92.5% (2.2)  | 92.4% (2.8)  |
-| ('bodysite', 'dummy')      | 14.1% (15.7) | 14.2% (15.6) | 79.3% (13.4) | 49.7% (1.5)  |
-| ('bodysite', 'tfid')       | 81.8% (19.7) | 20.6% (20.8) | 88.6% (9.6)  | 85.0% (6.7)  |
-| ('bodysite', 'protbert')   | 6.1% (17.5)  | 11.1% (31.8) | 86.4% (12.4) | 52.1% (7.2)  |
-| ('bodysite', 'hivbert')    | 53.4% (34.0) | 33.3% (25.4) | 89.1% (9.9)  | 81.6% (7.4)  |
+### Figure 6
 
-**Table 1**: Average model performance metrics across 5-fold cross-validation.
-The number in cell represents the mean metric across all folds and across each predictive field.
-The numbers in the parentheses represent the standard deviation of the metric.
+Transformer models accurately predict the outcome of drug resistance mutations (DRMs). 
+Each sequence in the resistance dataset was mutated by each of the ten DRMs as described in the methods and each mutated sequence is shown as a single point; there are ten points per sequence. 
+Sequences where a DRM was added are shown in red which should increase the probability of resistance. 
+Points in grey indicate sequences where a DRM was removed and should decrease in probability of resistance. 
+The dashed black line shows the x=y line and the assumption of no change due to the mutation. 
+Each column of axes shows the predictions using each of the three models. 
+With the first column indicating the TF-IDF model; the second indicating the Prot-BERT model; and the third showing the HIV-BERT results. 
+Each row represents the prediction on a different drug in the order FPV, IDV, NFV, and SQV.  
 
+![Figure 6](figures/Fig6-coreceptor_mutation_effect-high.png) 
 
+### Figure 7
 
-**Figure 4** *Model prediction results.* 
+Transformer models accurately predict the outcome of CXCR4 enhancing mutations.
+Each sequence in the V3 coreceptor dataset was mutated by each of the nine CXCR4 promoting mutations as described in the methods and each mutated sequence is shown as a single point; there are nine points per sequence.
+Sequences where a CXCR4 promoting mutation was added is shown in orange which should increase the probability of CXCR4 binding and decrease the probability of CCR5 binding. 
+Points in green indicate sequences where a CXCR4 promoting mutation was removed and should decrease CXCR4 binding and increase CCR5 binding. 
+The dashed black line shows the x=y line and the assumption of no change due to the mutation. 
+Each column of axes shows the predictions using each of the three models with the first column indicating the TF-IDF model; the second indicating the Prot-BERT model; and the third showing the HIV-BERT.
+Each row represents the prediction on a different coreceptor with CCR5 on the top and CXCR4 on the bottom.
 
-![Model Results](figures/Fig4-model_results-high.png)
+![Figure 7](figures/Fig7-conceptual_model_results-high.png) 
 
+### Figure 8
 
-### Conceptual Error
-
-#TODO-Will write this better
-
-Suplementary Figure 1: Resistance mutations. 
-Blue dots are "gain of function", yellow are loss of function.
-Conceptual error is any yellow mutation above the line or blue mutation below the line
-
-![Resist Mutations](figures/FigS1-resist_effect-high.png)
-
-
-Suplementary Figure 2: X4 mutations.  
-Blue dots are X4 defining mutations, yellow are losses of those mutations.
-X4 Conceptual error is any yellow mutation above the line or blue mutation below the line.
-R5 Conceptual error is any blue mutation above the line or yellow mutation below the line.
-
-![Coreceptor Mutations](figures/FigS2-corecept_effect-high.png)
+HIV-1 pretraining decreases conceptual error. 
+**(A)** The average conceptual error of each model is shown in across the coreceptor and protease resistance tasks for each model. 
+**(B)** The conceptual error was disambiguated across each field of the coreceptor model. 
+**(C)** The conceptual error was disambiguated across each field of the protease resistance model. 
+Across all axes the Null model is show in red, the TF-IDF model is show in blue, the Prot-BERT model in green and the HIV-BERT model is in purple. 
+The test-comparison bars represent the results of a paired t-test between each group; undrawn comparisons p<0.05, \*(0.05<p<=0.01), \*\*(0.01<p<=0.001), \*\*\*(0.001<p<=0.0001), \*\*\*\*(p<=0.00001). A Bonferroni correction based on all possible tests in the figure.  
 
 
-
-HIV-BERT has the lowest conceptual error.
-
-![Model Results](figures/Fig5-conceptual_results-high.png)
-
-
-
-
-
-
+![Figure 8](figures/Fig9-conceptual_model_results-high.png)

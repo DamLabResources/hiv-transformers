@@ -1,0 +1,15 @@
+##gff-version 3
+HXB2F	.	gene	790	2292	.	+	.	ID=gag_gene;Name=gag
+HXB2F	.	gene	2358	5096	.	+	.	ID=pol_gene;Name=pol
+HXB2F	.	gene	5041	5619	.	+	.	ID=vif_gene
+HXB2F	.	gene	5559	5839	.	+	.	ID=vpr_gene
+HXB2F	.	gene	5830	8465	.	+	.	ID=tat_gene
+HXB2F	.	mRNA	5830	8465	.	+	.	ID=tat_mrna;Parent=tat_gene
+HXB2F	.	exon	5830	6044	.	+	.	ID=tat1;Parent=tat_mrna
+HXB2F	.	exon	8378	8465	.	+	.	ID=tat2;Parent=tat_mrna
+HXB2F	.	gene	5969	8651	.	+	.	ID=rev_gene
+HXB2F	.	mRNA	5969	8651	.	+	.	ID=rev_mrna;Parent=rev_gene
+HXB2F	.	exon	5969	6044	.	+	.	ID=rev1;Parent=rev_mrna
+HXB2F	.	exon	8378	8652	.	+	.	ID=rev2;Parent=rev_mrna
+HXB2F	.	gene	6224	8794	.	+	.	ID=env_gene
+HXB2F	.	gene	8796	9413	.	+	.	ID=nef_gene
