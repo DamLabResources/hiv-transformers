@@ -1,0 +1,24 @@
+from common import MODELS, FOLDS, targets_func, model_max_length, gpu_size
+
+TOKENIZER = 'Rostlab/prot_bert_bfd'
+dataset_stems = ['V3_coreceptor',
+                 'V3_bodysite',
+                 'PR_resist']
+
+
+include: "dataprep.smk"
+include: "training.smk"
+include: "conceptual.smk"
+include: "downsampling.smk"
+
+
+rule all:
+    input:
+        # data
+        rules.prep_all.input,
+
+        # models
+        rules.train_all.input,
+
+        # conceptual
+        rules.conceptual_all.input,

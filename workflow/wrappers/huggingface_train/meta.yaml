@@ -1,0 +1,10 @@
+name: ''
+description: ''
+author:
+ - WIll Dampier
+input:
+ - prepared and tokenized HuggingFace dataset
+ - pretrained model
+output:
+ - refined and trained model directory
+ - yaml file of training metrics

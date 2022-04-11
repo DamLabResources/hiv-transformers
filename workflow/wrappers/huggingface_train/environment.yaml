@@ -1,0 +1,10 @@
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - transformers
+  - datasets
+  - scikit-learn
+  - torch
+  - pandas
+  - yaml

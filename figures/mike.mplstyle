@@ -1,0 +1,45 @@
+# Fonts
+
+font.family:  sans-serif
+font.style:   normal
+font.variant: normal
+font.weight:  normal
+font.stretch: normal
+font.size:    10.0
+
+# Text Elements
+axes.labelsize: 12
+
+axes.titlesize: 12
+axes.titleweight: bold
+axes.titlelocation: left
+
+xtick.labelsize: 10
+ytick.labelsize: 10
+
+legend.title_fontsize: 12
+legend.fontsize: 10
+
+
+# Axes
+
+axes.grid: False
+grid.linestyle: --
+
+axes.spines.left: True
+axes.spines.bottom: True
+
+# LEGEND
+
+legend.frameon: False
+
+
+# Saving
+
+savefig.dpi: 300
+savefig.transparent: True
+
+
+# Misc
+
+figure.autolayout: False
